@@ -1,5 +1,6 @@
 package betterwithlocking.command;
 
+import melib.command.ArgumentTypeUsername;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.ArgumentBuilderLiteral;

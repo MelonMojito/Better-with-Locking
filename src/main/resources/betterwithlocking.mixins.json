@@ -5,12 +5,9 @@
   "injectors": {
     "defaultRequire": 1
   },
-  "mixins": [
-    "CommandManagerMixin"
-  ],
+  "mixins": [],
   "client": [],
   "server": [
-    "MinecraftServerMixin",
     "PacketHandlerServerMixin",
     "tile_entities.activator.BlockLogicActivatorMixin",
     "tile_entities.activator.TileEntityActivatorMixin",
