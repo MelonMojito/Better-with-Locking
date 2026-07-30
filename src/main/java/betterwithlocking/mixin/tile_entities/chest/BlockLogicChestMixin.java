@@ -1,0 +1,82 @@
+package betterwithlocking.mixin.tile_entities.chest;
+
+import betterwithlocking.Lockable;
+import betterwithlocking.config.Data;
+import betterwithlocking.util.LockUtil;
+import betterwithlocking.util.Feedback;
+import betterwithlocking.LockManager;
+import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.core.block.Block;
+import net.minecraft.core.block.BlockLogic;
+import net.minecraft.core.block.BlockLogicChest;
+import net.minecraft.core.block.entity.TileEntityChest;
+import net.minecraft.core.block.material.Material;
+import net.minecraft.core.entity.Mob;
+import net.minecraft.core.entity.player.Player;
+import net.minecraft.core.util.helper.Side;
+import net.minecraft.core.world.World;
+import net.minecraft.server.entity.player.PlayerServer;
+import net.minecraft.core.world.pos.TilePosc;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin(value = BlockLogicChest.class, remap = false)
+public abstract class BlockLogicChestMixin extends BlockLogic {
+	public BlockLogicChestMixin(Block<?> block, Material material) {
+		super(block, material);
+	}
+
+	@Override
+	public int getPistonPushReaction(World world, int x, int y, int z) {
+		Lockable lockable = (Lockable) world.getTileEntity(x, y, z);
+		if(lockable.getIsLocked()){
+			return Material.PISTON_CANT_PUSH;
+		}
+		return super.getPistonPushReaction(world, x, y, z);
+	}
+
+	@Inject(at = @At("HEAD"), method = "onInteracted", cancellable = true)
+	public void onBlockRightClickedInject(World world, TilePosc pos, Player player, Side side, double xPlaced, double yPlaced, CallbackInfoReturnable<Boolean> cir) {
+
+		Lockable lockable = (Lockable) world.getTileEntity(pos);
+		if(player instanceof PlayerServer && LockManager.determineAuthStatus(lockable, (PlayerServer) player) <= LockManager.UNTRUSTED && !player.isSneaking()){
+			Feedback.error((PlayerServer) player, "Chest is Locked! (Use /lock info for more information)");
+			cir.setReturnValue(false);
+			return;
+		} else if(player instanceof PlayerServer && LockManager.determineAuthStatus(lockable, (PlayerServer) player) <= LockManager.UNTRUSTED && player.isSneaking()){
+			cir.setReturnValue(false);
+			return;
+		}
+	}
+
+	@Inject(at = @At("TAIL"), method = "onPlacedByMob", cancellable = true)
+	public void onBlockPlacedInject(World world, TilePosc pos, Side placeSide, Mob mob, double xPlaced, double yPlaced, CallbackInfo ci, @Local(name = "type") BlockLogicChest.Type type) {
+		TileEntityChest existingChest = LockUtil.getOtherChest(world, (TileEntityChest) world.getTileEntity(pos));
+		TileEntityChest placedChest = (TileEntityChest) world.getTileEntity(pos);
+
+		Lockable existingLockable = (Lockable) existingChest;
+		Lockable placedLockable = (Lockable) placedChest;
+
+		if(existingLockable != null) {
+			placedLockable.setLockOwner(existingLockable.getLockOwner());
+			placedLockable.setIsLocked(existingLockable.getIsLocked());
+			placedLockable.setTrustedPlayers(existingLockable.getTrustedPlayers());
+
+			//completing an unlocked double chest locks both halves to the placer
+			if(!existingLockable.getIsLocked() && mob instanceof PlayerServer placer){
+				if(Data.Users.getOrCreate(placer.uuid).lockOnBlockPlaced){
+					existingLockable.setIsLocked(true);
+					existingLockable.setLockOwner(placer.uuid);
+					placedLockable.setIsLocked(true);
+					placedLockable.setLockOwner(placer.uuid);
+					Feedback.successSilent(placer, "Locked Double Chest!");
+				}
+			}
+		} else {
+			LockUtil.lockOnPlace(world, pos, mob);
+		}
+	}
+}

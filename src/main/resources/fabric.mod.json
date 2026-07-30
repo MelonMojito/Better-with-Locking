@@ -1,11 +1,11 @@
 {
 	"schemaVersion": 1,
-	"id": "examplemod",
+	"id": "betterwithlocking",
 	"version": "${version}",
-	"name": "Example Mod",
-	"description": "This mod aims to help new BTA modders.",
+	"name": "Better with Locking",
+	"description": "Container locking for BTA servers.",
 	"authors": [
-		"Turnip Labs"
+		"MelonMojito"
 	],
 	"contact": {
 		"homepage": "",
@@ -16,16 +16,17 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"turniplabs.examplemod.ExampleMod"
+			"betterwithlocking.BetterWithLocking"
 		]
 	},
 	"mixins": [
-		"examplemod.mixins.json"
+		"betterwithlocking.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=${fabricloader}",
 		"minecraft": "*",
-		"java": ">=${java}"
+		"java": ">=${java}",
+		"halplibe": ">=${halplibe}"
 	},
 	"suggests": {
 		"modmenu": ">=${modmenu}"

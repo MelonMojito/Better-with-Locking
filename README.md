@@ -1,39 +1,30 @@
-# Example Mod
+# Better with Locking
 
-Template for making Babric mods for BTA!
+Container locking for [Better than Adventure](https://betterthanadventure.net/) servers. 
 
-**Note: *DO NOT fork this repository unless you want to contribute!***
+Lets players lock chests, furnaces, blast furnaces, dispensers, trommels, baskets, activators, and golden meshes so only they (and players they trust) can open, break, pick up, or piston-push them.
 
-## Prerequisites
-- JDK for Java 21 ([Eclipse Temurin](https://adoptium.net/temurin/releases/) recommended)
-- [Intellij IDEA](https://www.jetbrains.com/idea/download/) (Scroll down for the free community edition, if using linux **DO NOT** use the flatpak distribution)
-- Minecraft Development plugin (Optional, but highly recommended)
+## Commands
 
-## Setup instructions
-   
+All commands operate on the container you are looking at (unless noted otherwise).
 
-1. Click the `Use this template` button on this repo's page above (Will only appear if logged in). Choose `Create a new repository`, you will be redirected to a new page. Enter your repo's name and description, and hit `Create repository`.  
-   To get your project, open IntelliJ IDEA and click `Clone Repository` (`Get from VCS` on older versions). Select `Repository URL` and enter your repo's url
+| Command | Description |
+| --- | --- |
+| `/lock` | Lock the container. Double chests lock as one. |
+| `/unlock` | Unlock the container (owner or bypass only). Clears the trust list and community flag. |
+| `/lock info` | Show the owner, community status, and trusted players of the container. |
+| `/lock trust <player>` | Trust a player to this container. |
+| `/lock untrust <player>` | Remove a player's trust from this container. |
+| `/lock trustall <player>` | Trust a player to **all** of your containers. |
+| `/lock untrustall <player>` | Remove a player from your trust-all list. |
+| `/lock trustcommunity` | Let everyone open this container (but not break or pick it up). |
+| `/lock untrustcommunity` | Revoke community access. |
+| `/lock onblockplaced` | Toggle automatically locking containers you place. **On by default.** |
+| `/lock onblockpunched` | Toggle locking containers by punching them. |
+| `/lock bypass` | (Admin) Toggle bypassing all locks. |
 
-2. After the project has finished importing, close it and open it again.  
-   If that does not work, open the right sidebar with `Gradle` on it, open `Tasks` > `fabric` and run `ideaSyncTask`.
+## Notes
 
-3. Create a new run configuration by going in `Run > Edit Configurations`.  
-   Then click on the plus icon and select Gradle. In the `Tasks and Arguments` field enter `build`.  
-   Running it will build your finished jar files and put them in `build/libs/`.
-
-4. Lastly, open `File` > `Settings` and head to `Build, Execution, Development` > `Build Tools` > `Gradle`.  
-   Make sure `Build and run using` and `Run tests using` is set to `Gradle`.
-
-5. Done! Now, all that's left is to change every mention of `examplemod` and `turniplabs` to your own mod id and mod group, respectively. Happy modding!
-
-## Tips
-
-1. If you haven't already you should join the BTA modding discord! https://discord.gg/FTUNJhswBT
-2. You can set your username when launching the client run configuration by setting `--username <username>` in your program arguments.
-3. When launching the server run configuration you may want to remove the `nogui` program argument in order to see the regular server GUI.
-4. In Intellij you can double press shift or press ctrl+N to search class files, change the search from the default `Project Files` to `All Places` you can easily explore the classes for your dependencies and even BTA itself.
-5. In Intellij if ctrl+left-click on a field or method you can quickly get information on when and where that field or method is assign or used.
-6. Ensure IntelliJ is updated to the latest version. This is important because this template uses the latest Gradle version and if your IntelliJ installation is outdated, it may not support the latest version.
-7. In the `examplemod.mixins.json` you'll see `"compatibilityLevel": "JAVA_${java}",` along with an error message from the `Minecraft Development` plugin stating `Cannot resolve compatibility level 'JAVA_${java}'`. You can safely ignore this. The Gradle build system has been set up to grab the Java version from your `gradle.properties` and replace `${java}` with it. So the compiled binary will properly have it as `JAVA_8`.
-
+- Lock data is stored on the tile entity itself (in the world save); per-player settings are stored in `config/betterwithlocking/users/`.
+- User files from MelonUtilities can be copied into `config/betterwithlocking/users/` - the lock data format is unchanged.
+- The mod is server-side; clients do not need it installed.
