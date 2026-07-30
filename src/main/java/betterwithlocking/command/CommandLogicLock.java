@@ -102,6 +102,22 @@ public class CommandLogicLock {
 		return Command.SINGLE_SUCCESS;
 	}
 
+	public static int toggleFeedback(@NotNull PlayerServer sender){
+		UUID senderUUID = sender.uuid;
+
+		if(Data.Users.getOrCreate(senderUUID).lockFeedback){
+			//confirm before flipping so this is the last feedback the player receives
+			Feedback.destructive(sender, "Lock Feedback Disabled");
+			Data.Users.getOrCreate(senderUUID).lockFeedback = false;
+			Data.Users.save(senderUUID);
+		} else {
+			Data.Users.getOrCreate(senderUUID).lockFeedback = true;
+			Data.Users.save(senderUUID);
+			Feedback.success(sender, "Lock Feedback Enabled!");
+		}
+		return Command.SINGLE_SUCCESS;
+	}
+
 	public static int lockTrust(PlayerServer sender, String targetUsername){
 
 		Pair<UUID, String> profile;
