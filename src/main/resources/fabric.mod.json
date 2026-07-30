@@ -26,7 +26,8 @@
 		"fabricloader": ">=${fabricloader}",
 		"minecraft": "*",
 		"java": ">=${java}",
-		"halplibe": ">=${halplibe}"
+		"halplibe": ">=${halplibe}",
+		"melib": ">=1.0.0"
 	},
 	"suggests": {
 		"modmenu": ">=${modmenu}"

@@ -1,24 +1,18 @@
 package betterwithlocking.util;
 
 import betterwithlocking.Lockable;
+import melib.util.Profiles;
 import betterwithlocking.config.Data;
-import com.b100.json.JsonParser;
-import com.b100.json.element.JsonObject;
-import com.b100.utils.StringUtils;
 import net.minecraft.core.block.BlockLogicChest;
 import net.minecraft.core.block.entity.*;
 import net.minecraft.core.entity.Mob;
-import net.minecraft.core.entity.player.Player;
 import net.minecraft.core.net.command.TextFormatting;
-import net.minecraft.core.util.collection.Pair;
 import net.minecraft.core.util.helper.Direction;
 import net.minecraft.core.util.helper.MathHelper;
-import net.minecraft.core.util.helper.UUIDHelper;
 import net.minecraft.core.util.phys.HitResult;
 import net.minecraft.core.util.phys.Vec3;
 import net.minecraft.core.world.World;
 import net.minecraft.core.world.pos.TilePosc;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.entity.player.PlayerServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,60 +22,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class LockUtil {
-
-	private static final String url = "https://sessionserver.mojang.com/session/minecraft/profile/";
-	private static final JsonParser jsonParser = new JsonParser();
-	private static final Map<UUID, String> UUIDtoNameMap = new HashMap<>();
-
-	public static Pair<UUID, String> getProfileFromUsername(String username) throws NullPointerException {
-		UUID uuid;
-		String usernameOrDisplayName;
-
-		Player target = MinecraftServer.getInstance().playerList.getPlayerEntity(username);
-
-		if(target != null){
-			uuid = target.uuid;
-			usernameOrDisplayName = target.getDisplayName();
-		} else {
-			uuid = UUIDHelper.getUUIDFromName(username);
-			if(uuid == null){
-				throw new NullPointerException();
-			}
-			usernameOrDisplayName = username;
-		}
-		return Pair.of(uuid, usernameOrDisplayName);
-	}
-
-	public static @Nullable String getNameFromUUID(UUID uuid){
-		if(UUIDtoNameMap.containsKey(uuid)){
-			return UUIDtoNameMap.get(uuid);
-		}
-
-		String string;
-		try{
-			string = StringUtils.getWebsiteContentAsString(url + uuid);
-		}catch (Exception e) {
-			System.err.println("Can't connect to Mojang API.");
-			e.printStackTrace();
-			return null;
-		}
-		if(string.isEmpty()) {
-			System.err.println("UUID [" + uuid + "] doesn't exist!");
-			return null;
-		}
-		String username;
-		try {
-			JsonObject contentParsed = jsonParser.parse(string);
-			username = contentParsed.getString("name");
-		}catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-		if (uuid == null) return null;
-
-		UUIDtoNameMap.put(uuid, username);
-		return username;
-	}
 
 	public static HitResult rayCastFromPlayer(PlayerServer sender) {
 		float f = 1.0f;
@@ -183,10 +123,10 @@ public class LockUtil {
 		}
 
 		new Thread(() -> {
-			String owner = getNameFromUUID(lockable.getLockOwner());
+			String owner = Profiles.getNameFromUUID(lockable.getLockOwner());
 			Map<String, Boolean> trustedPlayers = new HashMap<>();
 			for(Map.Entry<UUID, Boolean> entry : lockable.getAllTrustedPlayers().entrySet()){
-				trustedPlayers.put(getNameFromUUID(entry.getKey()), entry.getValue());
+				trustedPlayers.put(Profiles.getNameFromUUID(entry.getKey()), entry.getValue());
 			}
 			containerLockInfoLogic(player, lockable, containerName, owner, trustedPlayers);
 		}).start();

@@ -3,6 +3,8 @@ package betterwithlocking;
 import betterwithlocking.command.CommandLock;
 import betterwithlocking.command.CommandUnlock;
 import betterwithlocking.config.Data;
+import melib.MelibCommands;
+import melib.MelibServer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -21,15 +23,14 @@ public class BetterWithLocking implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Better with Locking initializing!");
 		Data.Users.reload();
+		MelibCommands.onServerRegister(BetterWithLocking::registerServerCommands);
+		MelibServer.onStarted(BetterWithLocking::afterServerStart);
 		LOGGER.info("Better with Locking initialized!");
 	}
 
 	public static void registerServerCommands() {
 		CommandManager.registerCommand(new CommandLock());
 		CommandManager.registerCommand(new CommandUnlock());
-	}
-
-	public static void registerClientCommands() {
 	}
 
 	public static void afterServerStart() {

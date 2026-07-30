@@ -20,6 +20,7 @@ loom {
     customMinecraftMetadata.set("https://downloads.betterthanadventure.net/bta-client/${btaChannel}/$btaVersion/manifest.json")
 }
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://maven.fabricmc.net/") { name = "Fabric" }
     maven("https://maven.thesignalumproject.net/infrastructure") { name = "SignalumMavenInfrastructure" }
@@ -36,7 +37,8 @@ dependencies {
 	// Required at compilation & runtime
 	// included in builds as a runtime dependency
 	implementation(libs.loader)
-	implementation(libs.halplibe) // If you do not need halplibe you can delete this line
+	implementation(libs.halplibe)
+	implementation(libs.melib)
 
 	// Only required at compilation
 	// provides documentation, can be removed if that isn't needed

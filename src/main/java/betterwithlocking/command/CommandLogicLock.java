@@ -1,5 +1,6 @@
 package betterwithlocking.command;
 
+import melib.util.Profiles;
 import betterwithlocking.Lockable;
 import betterwithlocking.config.Data;
 import betterwithlocking.util.Feedback;
@@ -122,7 +123,7 @@ public class CommandLogicLock {
 
 		Pair<UUID, String> profile;
 		try {
-			profile = LockUtil.getProfileFromUsername(targetUsername);
+			profile = Profiles.getProfileFromUsername(targetUsername);
 		} catch (NullPointerException e) {
 			Feedback.error(sender, "Failed to Trust %s to Container! (Player Does not Exist)", targetUsername);
 			return 0;
