@@ -15,6 +15,7 @@ import net.minecraft.core.world.World;
 import net.minecraft.server.entity.player.PlayerServer;
 import net.minecraft.core.world.ICarriable;
 import net.minecraft.core.world.pos.TilePosc;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,41 +40,40 @@ public class TileEntityActivatorMixin implements Lockable {
 	private final List<UUID> trustedPlayers = new ArrayList<>();
 
 	@Inject(at = @At("TAIL"), method = "writeAdditionalData")
-	public void writeToNBTInject(CompoundTag nbttagcompound, CallbackInfo ci){
-		nbttagcompound.putBoolean("isLocked", isLocked);
-		UUIDHelper.writeToTag(nbttagcompound, lockOwner, "lockOwner");
-		nbttagcompound.putBoolean("isCommunityContainer", isCommunityContainer);
+	public void writeToNBTInject(@NotNull CompoundTag compoundTag, CallbackInfo ci){
+		compoundTag.putBoolean("isLocked", isLocked);
+		UUIDHelper.writeToTag(compoundTag, lockOwner, "lockOwner");
+		compoundTag.putBoolean("isCommunityContainer", isCommunityContainer);
 
 		ListTag trustedPlayers = new ListTag();
 		for(UUID uuid : this.trustedPlayers){
-			CompoundTag compoundTag = new CompoundTag();
-			UUIDHelper.writeToTag(compoundTag, uuid, "uuid");
-			trustedPlayers.addTag(compoundTag);
+			CompoundTag cTag = new CompoundTag();
+			UUIDHelper.writeToTag(cTag, uuid, "uuid");
+			trustedPlayers.addTag(cTag);
 		}
-		nbttagcompound.putList("trustedPlayers", trustedPlayers);
+		compoundTag.putList("trustedPlayers", trustedPlayers);
 	}
 
 	@Inject(at = @At("TAIL"), method = "readAdditionalData")
-	public void readFromNBTInject(CompoundTag nbttagcompound, CallbackInfo ci){
-		isLocked = nbttagcompound.getBooleanOrDefault("isLocked", false);
-		lockOwner = UUIDHelper.readFromTag(nbttagcompound, "lockOwner");
-		isCommunityContainer = nbttagcompound.getBooleanOrDefault("isCommunityContainer", false);
+	public void readFromNBTInject(@NotNull CompoundTag compoundTag, CallbackInfo ci){
+		isLocked = compoundTag.getBooleanOrDefault("isLocked", false);
+		lockOwner = UUIDHelper.readFromTag(compoundTag, "lockOwner");
+		isCommunityContainer = compoundTag.getBooleanOrDefault("isCommunityContainer", false);
 
-		ListTag tempListTag = nbttagcompound.getList("trustedPlayers");
+		ListTag tempListTag = compoundTag.getList("trustedPlayers");
 
 		for(Tag<?> tag : tempListTag){
-			if(tag instanceof CompoundTag){
-				CompoundTag compoundTag = (CompoundTag) tag;
-				trustedPlayers.add(UUIDHelper.readFromTag(compoundTag, "uuid"));
+			if(tag instanceof CompoundTag ctag){
+				trustedPlayers.add(UUIDHelper.readFromTag(ctag, "uuid"));
 			}
 		}
 	}
 
 	@Inject(at = @At("HEAD"), method = "pickup", cancellable = true)
-	public void canBeCarriedInject(World world, Entity potentialHolder, TilePosc pos, CallbackInfoReturnable<ICarriable> cir){
-		if(potentialHolder instanceof PlayerServer && LockManager.determineAuthStatus(this, (PlayerServer) potentialHolder) <= LockManager.COMMUNITY){
-			Feedback.error((PlayerServer) potentialHolder, "Failed to Pickup Container! (Not Authorized)");
-			((PlayerServer) potentialHolder).playerNetServerHandler.sendPacket(new PacketSetHeldObject(potentialHolder.id, ((PlayerServer) potentialHolder).getHeldObject()));
+	public void canBeCarriedInject(World world, Entity holder, TilePosc tilePos_, CallbackInfoReturnable<ICarriable> cir){
+		if(holder instanceof PlayerServer && LockManager.determineAuthStatus(this, (PlayerServer) holder) <= LockManager.COMMUNITY){
+			Feedback.error((PlayerServer) holder, "Failed to Pickup Container! (Not Authorized)");
+			((PlayerServer) holder).playerNetServerHandler.sendPacket(new PacketSetHeldObject(holder.id, holder.getHeldObject()));
 			cir.setReturnValue(null);
 			return;
 		}
