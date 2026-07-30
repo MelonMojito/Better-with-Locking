@@ -2,6 +2,7 @@ package betterwithlocking;
 
 import betterwithlocking.config.Data;
 import net.minecraft.server.entity.player.PlayerServer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -12,7 +13,7 @@ public class LockManager {
 	public static final int TRUSTED = 2;
 	public static final int FULL = 3;
 
-	public static int determineAuthStatus(Lockable lockable, PlayerServer player){
+	public static int determineAuthStatus(@NotNull Lockable lockable, PlayerServer player){
 		if(lockable.getLockOwner() == null) return FULL;
 
 		int authStatus = UNTRUSTED;

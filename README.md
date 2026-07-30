@@ -19,9 +19,10 @@ All commands operate on the container you are looking at (unless noted otherwise
 | `/lock untrustall <player>` | Remove a player from your trust-all list. |
 | `/lock trustcommunity` | Let everyone open this container (but not break or pick it up). |
 | `/lock untrustcommunity` | Revoke community access. |
-| `/lock onblockplaced` | Toggle automatically locking containers you place. **On by default.** |
-| `/lock onblockpunched` | Toggle locking containers by punching them. |
-| `/lock bypass` | (Admin) Toggle bypassing all locks. |
+| `/lock toggle onblockplaced` | Toggle automatically locking containers you place. **On by default.** |
+| `/lock toggle onblockpunched` | Toggle locking containers by punching them. |
+| `/lock toggle feedback` | Toggle all lock text/sound feedback (except `/lock info`). **On by default.** |
+| `/lock toggle bypass` | (Admin) Toggle bypassing all locks. |
 
 ## Notes
 

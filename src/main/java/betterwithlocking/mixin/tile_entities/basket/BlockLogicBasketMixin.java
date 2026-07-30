@@ -14,6 +14,7 @@ import net.minecraft.core.util.helper.Side;
 import net.minecraft.core.world.World;
 import net.minecraft.server.entity.player.PlayerServer;
 import net.minecraft.core.world.pos.TilePosc;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -26,7 +27,7 @@ public abstract class BlockLogicBasketMixin extends BlockLogic {
 	}
 
 	@Override
-	public int getPistonPushReaction(World world, int x, int y, int z) {
+	public int getPistonPushReaction(@NotNull World world, int x, int y, int z) {
 		Lockable lockable = (Lockable) world.getTileEntity(x, y, z);
 		if(lockable.getIsLocked()){
 			return Material.PISTON_CANT_PUSH;

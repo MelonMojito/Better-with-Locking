@@ -12,6 +12,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.entity.player.PlayerServer;
 import net.minecraft.server.net.handler.PacketHandlerServer;
 import net.minecraft.server.world.WorldServer;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,23 +34,23 @@ public abstract class PacketHandlerServerMixin {
 		at = @At("HEAD"),
 		method = "handlePlayerAction",
 		cancellable = true)
-	private void handleBlockDigInject(PacketPlayerAction packet, CallbackInfo ci){
+	private void handleBlockDigInject(@NotNull PacketPlayerAction packetPlayerAction, CallbackInfo ci){
 		PlayerServer player = this.playerEntity;
 		WorldServer world = this.mcServer.getDimensionWorld(player.dimension);
-		TileEntity container = world.getTileEntity(packet.xPosition, packet.yPosition, packet.zPosition);
+		TileEntity container = world.getTileEntity(packetPlayerAction.xPosition, packetPlayerAction.yPosition, packetPlayerAction.zPosition);
 		if(container instanceof Lockable) {
-			Lockable lockable = (Lockable) world.getTileEntity(packet.xPosition, packet.yPosition, packet.zPosition);
+			Lockable lockable = (Lockable) world.getTileEntity(packetPlayerAction.xPosition, packetPlayerAction.yPosition, packetPlayerAction.zPosition);
 			if (lockable.getLockOwner() != null
 				&& !lockable.getLockOwner().equals(player.uuid)
 				&& !lockable.getTrustedPlayers().contains(player.uuid)
 				&& !Data.Users.getOrCreate(lockable.getLockOwner()).usersTrustedToAllContainers.containsKey(player.uuid)
 				&& !Data.Users.getOrCreate(player.uuid).lockBypass){
 				ci.cancel();
-				sendPacket(new PacketBlockUpdate(packet.xPosition, packet.yPosition, packet.zPosition, world));
+				sendPacket(new PacketBlockUpdate(packetPlayerAction.xPosition, packetPlayerAction.yPosition, packetPlayerAction.zPosition, world));
 				return;
 			}
 
-			if (packet.action == PacketPlayerAction.ACTION_DIG_START
+			if (packetPlayerAction.action == PacketPlayerAction.ACTION_DIG_START
 				&& Data.Users.getOrCreate(player.uuid).lockOnBlockPunched
 				&& lockable.getIsLocked()
 				&& !lockable.getLockOwner().equals(player.uuid))
@@ -59,7 +60,7 @@ public abstract class PacketHandlerServerMixin {
 				return;
 			}
 
-			if (packet.action == PacketPlayerAction.ACTION_DIG_START
+			if (packetPlayerAction.action == PacketPlayerAction.ACTION_DIG_START
 				&& Data.Users.getOrCreate(player.uuid).lockOnBlockPunched
 				&& lockable.getIsLocked()
 				&& lockable.getLockOwner().equals(player.uuid))
@@ -69,7 +70,7 @@ public abstract class PacketHandlerServerMixin {
 				return;
 			}
 
-			if(packet.action == PacketPlayerAction.ACTION_DIG_START && Data.Users.getOrCreate(player.uuid).lockOnBlockPunched && !lockable.getIsLocked()){
+			if(packetPlayerAction.action == PacketPlayerAction.ACTION_DIG_START && Data.Users.getOrCreate(player.uuid).lockOnBlockPunched && !lockable.getIsLocked()){
 				if (container instanceof TileEntityChest) {
 					Lockable iOtherContainer = (Lockable) LockUtil.getOtherChest(world, (TileEntityChest) container);
 					if (iOtherContainer != null) {

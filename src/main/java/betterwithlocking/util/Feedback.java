@@ -1,6 +1,7 @@
 package betterwithlocking.util;
 
 import betterwithlocking.BetterWithLocking;
+import betterwithlocking.config.Data;
 import net.minecraft.core.net.command.TextFormatting;
 import net.minecraft.core.net.packet.PacketPlaySoundDirect;
 import net.minecraft.core.sound.SoundCategory;
@@ -27,6 +28,9 @@ public class Feedback {
 	}
 
 	private static void send(@NotNull PlayerServer player, @NotNull TextFormatting color, String soundPath, @NotNull String message, Object... args) {
+		//players who toggled lock feedback off get no text or sound (/lock info bypasses this by sending directly)
+		if (!Data.Users.getOrCreate(player.uuid).lockFeedback) return;
+
 		player.sendMessage(format(color, message, args));
 		BetterWithLocking.LOGGER.info(String.format("Sent command feedback: [%s] to player: [username: %s, uuid: %s]", formatRaw(message, args), player.username, player.uuid));
 		if (soundPath != null) {

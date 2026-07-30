@@ -20,6 +20,7 @@ import net.minecraft.core.world.World;
 import net.minecraft.core.world.pos.TilePosc;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.entity.player.PlayerServer;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -103,7 +104,7 @@ public class LockUtil {
 		return sender.world.checkBlockCollisionBetweenPoints(vec3.asJomlVec(), vec3_1.asJomlVec(), false);
 	}
 
-	public static TileEntityChest getOtherChest(World world, TileEntityChest chest){
+	public static @Nullable TileEntityChest getOtherChest(@NotNull World world, @NotNull TileEntityChest chest){
 		int meta = world.getBlockMetadata(chest.tilePos.x, chest.tilePos.y, chest.tilePos.z);
 		BlockLogicChest.Type type = BlockLogicChest.getTypeFromMeta(meta);
 		if (type != BlockLogicChest.Type.SINGLE) {
@@ -162,21 +163,19 @@ public class LockUtil {
 
 	//locks a freshly placed container to its placer if they have lockOnBlockPlaced enabled
 	public static void lockOnPlace(World world, TilePosc pos, Mob mob) {
-		if (!(mob instanceof PlayerServer)) return;
-		PlayerServer player = (PlayerServer) mob;
+		if (!(mob instanceof PlayerServer player)) return;
 		if (!Data.Users.getOrCreate(player.uuid).lockOnBlockPlaced) return;
 
 		TileEntity container = world.getTileEntity(pos);
-		if (!(container instanceof Lockable)) return;
-		Lockable lockable = (Lockable) container;
+		if (!(container instanceof Lockable lockable)) return;
 		if (lockable.getIsLocked()) return;
 
 		lockable.setIsLocked(true);
 		lockable.setLockOwner(player.uuid);
-		Feedback.successSilent(player, "Locked " + getContainerName(container) + "!");
+		Feedback.success(player, "Locked " + getContainerName(container) + "!");
 	}
 
-	public static void sendContainerLockInfo(PlayerServer player, Lockable lockable, String containerName) {
+	public static void sendContainerLockInfo(PlayerServer player, @NotNull Lockable lockable, String containerName) {
 		if (!lockable.getIsLocked()) {
 			player.sendMessage(TextFormatting.GRAY + "< " + TextFormatting.LIGHT_GRAY + containerName + ": " + TextFormatting.RED + "Not Locked " + TextFormatting.GRAY + ">");
 			Feedback.playSound(player, "note.bd");
@@ -193,7 +192,7 @@ public class LockUtil {
 		}).start();
 	}
 
-	private static void containerLockInfoLogic(PlayerServer player, Lockable lockable, String containerName, String owner, Map<String, Boolean> trustedPlayers){
+	private static void containerLockInfoLogic(@NotNull PlayerServer player, @NotNull Lockable lockable, String containerName, String owner, @NotNull Map<String, Boolean> trustedPlayers){
 		player.sendMessage(TextFormatting.GRAY + "< " + TextFormatting.LIGHT_GRAY + containerName + ": " + TextFormatting.GRAY + ">" + TextFormatting.ORANGE + " * " + TextFormatting.GRAY + "=" + TextFormatting.LIGHT_GRAY + " In " + owner + "'s TrustAll List");
 		player.sendMessage(TextFormatting.GRAY + "  > " + TextFormatting.LIGHT_GRAY + "Owner: " + TextFormatting.GRAY + "[" + TextFormatting.LIGHT_GRAY + owner + TextFormatting.GRAY + "]");
 		player.sendMessage(TextFormatting.GRAY + "  > " + TextFormatting.LIGHT_GRAY + "Community Container: " + TextFormatting.GRAY + "[" + TextFormatting.LIGHT_GRAY + lockable.getIsCommunityContainer() + TextFormatting.GRAY + "]");

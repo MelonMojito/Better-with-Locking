@@ -23,6 +23,9 @@ public class UserJsonAdapter implements JsonDeserializer<User>, JsonSerializer<U
 			user.lockOnBlockPlaced = lockDataObj.get("lockOnBlockPlaced").getAsBoolean();
 			user.lockOnBlockPunched = lockDataObj.get("lockOnBlockPunched").getAsBoolean();
 			user.lockBypass = lockDataObj.get("lockBypass").getAsBoolean();
+			if(lockDataObj.has("lockFeedback")){
+				user.lockFeedback = lockDataObj.get("lockFeedback").getAsBoolean();
+			}
 			JsonObject usersTrustedToAllContainers = lockDataObj.getAsJsonObject("usersTrustedToAllContainers");
 			for(Map.Entry<String, JsonElement> entry : usersTrustedToAllContainers.entrySet()){
 				user.usersTrustedToAllContainers.put(UUID.fromString(entry.getKey()), entry.getValue().getAsString());
@@ -42,6 +45,7 @@ public class UserJsonAdapter implements JsonDeserializer<User>, JsonSerializer<U
 		lockData.addProperty("lockOnBlockPlaced", src.lockOnBlockPlaced);
 		lockData.addProperty("lockOnBlockPunched", src.lockOnBlockPunched);
 		lockData.addProperty("lockBypass", src.lockBypass);
+		lockData.addProperty("lockFeedback", src.lockFeedback);
 
 		for(Map.Entry<UUID, String> entry : src.usersTrustedToAllContainers.entrySet()){
 			usersTrustedToAllContainers.addProperty(entry.getKey().toString(), entry.getValue());

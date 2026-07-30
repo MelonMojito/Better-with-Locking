@@ -10,8 +10,10 @@ import net.minecraft.server.entity.player.PlayerServer;
 
 @SuppressWarnings("UnusedReturnValue")
 public class CommandLock implements CommandManager.CommandRegistry{
-	public static ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> lockOnBlockPlaced(ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> builder) {
-		builder.then(ArgumentBuilderLiteral.<CommandSource>literal("onblockplaced")
+	public static ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> lockToggle(ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> builder) {
+		ArgumentBuilderLiteral<CommandSource> toggle = ArgumentBuilderLiteral.<CommandSource>literal("toggle");
+
+		toggle.then(ArgumentBuilderLiteral.<CommandSource>literal("onblockplaced")
 			.executes(context ->
 				{
 					PlayerServer sender = (PlayerServer) context.getSource().getSender(); if(sender == null){return 0;}
@@ -19,11 +21,8 @@ public class CommandLock implements CommandManager.CommandRegistry{
 				}
 			)
 		);
-		return builder;
-	}
 
-	public static ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> lockOnBlockPunched(ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> builder) {
-		builder.then(ArgumentBuilderLiteral.<CommandSource>literal("onblockpunched")
+		toggle.then(ArgumentBuilderLiteral.<CommandSource>literal("onblockpunched")
 			.executes(context ->
 				{
 					PlayerServer sender = (PlayerServer) context.getSource().getSender(); if(sender == null){return 0;}
@@ -31,6 +30,26 @@ public class CommandLock implements CommandManager.CommandRegistry{
 				}
 			)
 		);
+
+		toggle.then(ArgumentBuilderLiteral.<CommandSource>literal("bypass").requires(CommandSource::hasAdmin)
+			.executes(context ->
+				{
+					PlayerServer sender = (PlayerServer) context.getSource().getSender(); if(sender == null){return 0;}
+					return CommandLogicLock.lockBypass(sender);
+				}
+			)
+		);
+
+		toggle.then(ArgumentBuilderLiteral.<CommandSource>literal("feedback")
+			.executes(context ->
+				{
+					PlayerServer sender = (PlayerServer) context.getSource().getSender(); if(sender == null){return 0;}
+					return CommandLogicLock.toggleFeedback(sender);
+				}
+			)
+		);
+
+		builder.then(toggle);
 		return builder;
 	}
 
@@ -118,18 +137,6 @@ public class CommandLock implements CommandManager.CommandRegistry{
 		return builder;
 	}
 
-	public static ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> lockBypass(ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> builder) {
-		builder.then(ArgumentBuilderLiteral.<CommandSource>literal("bypass").requires(CommandSource::hasAdmin)
-			.executes(context ->
-				{
-					PlayerServer sender = (PlayerServer) context.getSource().getSender(); if(sender == null){return 0;}
-					return CommandLogicLock.lockBypass(sender);
-				}
-			)
-		);
-		return builder;
-	}
-
 	public static ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> lockInfo(ArgumentBuilder<CommandSource, ArgumentBuilderLiteral<CommandSource>> builder) {
 		builder.then(ArgumentBuilderLiteral.<CommandSource>literal("info")
 			.executes(context ->
@@ -158,15 +165,13 @@ public class CommandLock implements CommandManager.CommandRegistry{
 		ArgumentBuilderLiteral<CommandSource> builder = ArgumentBuilderLiteral.<CommandSource>literal("lock");
 
 		lock(builder);
-		lockOnBlockPlaced(builder);
-		lockOnBlockPunched(builder);
+		lockToggle(builder);
 		lockTrust(builder);
 		lockTrustAll(builder);
 		lockTrustCommunity(builder);
 		lockUntrust(builder);
 		lockUntrustAll(builder);
 		lockUntrustCommunity(builder);
-		lockBypass(builder);
 		lockInfo(builder);
 
 		dispatcher.register(builder);
